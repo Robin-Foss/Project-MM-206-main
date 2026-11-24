@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="utils.js"></script>
+</head>
+
+<body>
+
+    <h1>Product list</h1>
+    <hr>
+    <div id="container"></div>
+
+    <script>
+
+        let container = document.getElementById('container');
+
+        //get current category from localStorage
+        const catId = localStorage.getItem("catId");
+
+        //url to products by category
+        const url = `https://sukkergris.onrender.com/webshop/testdummy/products?category_id=${catId}&key=${groupkey}`;
+
+        loadData();
+
+        //----------------------------------------------------------------
+        async function loadData() {
+
+            try {
+                const dataFromServer = await sendRequest(url); //using sendRequest in utils.js
+                refresh(dataFromServer)
+            } catch (error) {
+                errorHandler(error); //using errorHandler in utils.js                
+            }
+        }
+
+        //----------------------------------------------------------------
+        function refresh(data) {
+
+            console.log(data);
+
+            container.innerHTML = "";
+
+            for (let value of data) {
+                const div = document.createElement("div");
+                div.innerHTML = `
+                  <h2>${value.name}</h2>
+                  <p>${value.description}</p><hr>               
+                `;
+                container.appendChild(div);
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
