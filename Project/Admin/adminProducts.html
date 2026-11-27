@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukkergris - Admin Products</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <header>
+        <h1>Manage Products</h1>
+        <button type="button" id="backToMenuBtn">Back to Admin Menu</button>
+    </header>
+
+    <main>
+        <section>
+            <h2 id="formHeading">Add New Product</h2>
+            <form id="productForm">
+                <input type="hidden" id="productIdInput">
+                <input type="text" id="nameInput" placeholder="Product name" required>
+                <input type="text" id="categoryInput" placeholder="Category" required>
+                <input type="number" id="priceInput" placeholder="Price" step="0.01" required>
+                <input type="number" id="stockInput" placeholder="Stock count" required>
+                <input type="text" id="headingInput" placeholder="Short heading" required>
+                <textarea id="descriptionInput" placeholder="Description" required></textarea>
+                <input type="text" id="imageInput" placeholder="Image filename/URL">
+
+                <button type="submit" id="saveProductBtn">Save Product</button>
+                <button type="button" id="cancelEditBtn" hidden>Cancel Edit</button>
+            </form>
+            <p id="statusMessage"></p>
+        </section>
+
+        <section>
+            <h2>Product List</h2>
+            <div id="productListContainer"></div>
+        </section>
+    </main>
+
+    <script type="module" src="../js/adminProducts.js"></script>
+</body>
+</html>
