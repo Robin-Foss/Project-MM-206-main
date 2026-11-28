@@ -1,5 +1,3 @@
-import { apiBaseUrl, groupKey } from "../utils.js";
-
 const ordersListContainer = document.getElementById("ordersListContainer");
 const statusMessage = document.getElementById("statusMessage");
 const backToMenuBtn = document.getElementById("backToMenuBtn");
@@ -19,7 +17,7 @@ function initAdminOrders() {
 //--------------------------------------------------
 async function loadOrders() {
     try {
-        const response = await fetch(`${apiBaseUrl}/orders`, {
+        const response = await fetch(`${apiBaseUrl}/webshop/orders?key=${groupkey}`, {
             headers: getAuthHeaders()
         });
         if (!response.ok) {
@@ -35,6 +33,10 @@ async function loadOrders() {
 //--------------------------------------------------
 function renderOrders(orders) {
     ordersListContainer.innerHTML = "";
+    if (orders.length === 0) {
+        statusMessage.textContent = "No orders found.";
+        return;
+    }
     orders.forEach((order) => {
         const orderCard = createOrderElement(order);
         ordersListContainer.appendChild(orderCard);
@@ -45,7 +47,7 @@ function renderOrders(orders) {
 function createOrderElement(order) {
     const container = document.createElement("div");
     const info = document.createElement("p");
-    info.textContent = `Order #${order.id} - Customer: ${order.customerName} - Total: ${order.totalPrice} kr`;
+    info.textContent = `Order #${order.id} - Customer: ${order.customer_name}`;
 
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
@@ -59,7 +61,7 @@ function createOrderElement(order) {
 //--------------------------------------------------
 async function deleteOrder(orderId) {
     try {
-        const response = await fetch(`${apiBaseUrl}/orders/${orderId}`, {
+        const response = await fetch(`${apiBaseUrl}/webshop/orders?key=${groupkey}&Id=${orderId}`, {
             method: "DELETE",
             headers: getAuthHeaders()
         });
@@ -75,9 +77,7 @@ async function deleteOrder(orderId) {
 //--------------------------------------------------
 function getAuthHeaders() {
     return {
-        "Content-Type": "application/json",
-        "x-api-key": groupKey,
-        "Authorization": `Bearer ${sessionStorage.getItem("adminToken")}`
+        "authorization": sessionStorage.getItem("adminToken")
     };
 }
 

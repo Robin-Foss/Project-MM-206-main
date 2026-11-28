@@ -1,4 +1,3 @@
-import { apiBaseUrl, groupKey } from "../utils.js";
 
 const loginSection = document.getElementById("loginSection");
 const adminMenuSection = document.getElementById("adminMenuSection");
@@ -6,6 +5,8 @@ const adminLoginForm = document.getElementById("adminLoginForm");
 const errorMessageElement = document.getElementById("errorMessage");
 const productsBtn = document.getElementById("productsBtn");
 const ordersBtn = document.getElementById("ordersBtn");
+const usersBtn = document.getElementById("usersBtn");
+const reviewsBtn = document.getElementById("reviewsBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 
 //--------------------------------------------------
@@ -22,6 +23,12 @@ function setupEventListeners() {
     adminLoginForm.addEventListener("submit", handleLoginSubmit);
     productsBtn.addEventListener("click", () => navigateTo("adminProducts.html"));
     ordersBtn.addEventListener("click", () => navigateTo("adminOrders.html"));
+    if (usersBtn) {
+        usersBtn.addEventListener("click", () => navigateTo("adminUsers.html"));
+    }
+    if (reviewsBtn) {
+        reviewsBtn.addEventListener("click", () => navigateTo("adminReviews.html"));
+    }
     logoutBtn.addEventListener("click", handleLogout);
 }
 
@@ -44,13 +51,13 @@ async function handleLoginSubmit(event) {
 
 //--------------------------------------------------
 async function sendLoginRequest(username, password) {
-    const response = await fetch(`${apiBaseUrl}/users/login`, {
+    const authString = createBasicAuthString(username, password);
+    const url = `${apiBaseUrl}/users/adminlogin?key=${groupkey}`;
+    const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-            "x-api-key": groupKey
-        },
-        body: JSON.stringify({ username, password })
+            "authorization": authString
+        }
     });
 
     if (!response.ok) {
@@ -58,7 +65,6 @@ async function sendLoginRequest(username, password) {
     }
     return await response.json();
 }
-
 //--------------------------------------------------
 function showAdminMenu() {
     loginSection.hidden = true;
