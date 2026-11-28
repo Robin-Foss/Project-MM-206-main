@@ -12,8 +12,10 @@ const logoutBtn = document.getElementById("logoutBtn");
 //--------------------------------------------------
 function initAdminLogin() {
     const existingToken = sessionStorage.getItem("adminToken");
-    if (existingToken) {
+    if (existingToken && existingToken !== "undefined" && existingToken !== "null") {
         showAdminMenu();
+    } else {
+        sessionStorage.removeItem("adminToken");
     }
     setupEventListeners();
 }
@@ -42,7 +44,14 @@ async function handleLoginSubmit(event) {
 
     try {
         const data = await sendLoginRequest(username, password);
-        sessionStorage.setItem("adminToken", data.token);
+        console.log("Svar fra adminlogin:", data);
+
+        const token = data.token || data.logindata?.token || data.accessToken;
+        if (!token) {
+            throw new Error("Fant ikke token i svaret fra serveren. Sjekk Console (F12).");
+        }
+
+        sessionStorage.setItem("adminToken", token);
         showAdminMenu();
     } catch (error) {
         errorMessageElement.textContent = error.message;
