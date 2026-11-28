@@ -1,5 +1,3 @@
-import { apiBaseUrl, groupKey } from "../utils.js";
-
 const productForm = document.getElementById("productForm");
 const productListContainer = document.getElementById("productListContainer");
 const statusMessage = document.getElementById("statusMessage");
@@ -28,9 +26,7 @@ function setupEventListeners() {
 //--------------------------------------------------
 async function loadProducts() {
     try {
-        const response = await fetch(`${apiBaseUrl}/products`, {
-            headers: { "x-api-key": groupKey }
-        });
+        const response = await fetch(`${apiBaseUrl}/webshop/chocolates?key=${groupkey}`);
         const products = await response.json();
         renderProductList(products);
     } catch (error) {
@@ -51,7 +47,7 @@ function renderProductList(products) {
 function createProductRow(product) {
     const row = document.createElement("div");
     const title = document.createElement("span");
-    title.textContent = `${product.name} - ${product.price} kr `;
+    title.textContent = `${product.chocoName} - ${product.price} kr`;
 
     const editBtn = createActionButton("Edit", () => populateFormForEdit(product));
     const deleteBtn = createActionButton("Delete", () => deleteProduct(product.id));
@@ -72,12 +68,12 @@ function createActionButton(label, onClickHandler) {
 //--------------------------------------------------
 function populateFormForEdit(product) {
     document.getElementById("productIdInput").value = product.id;
-    document.getElementById("nameInput").value = product.name;
-    document.getElementById("categoryInput").value = product.category;
+    document.getElementById("nameInput").value = product.chocoName;
+    document.getElementById("categoryInput").value = product.category_id || 1;
     document.getElementById("priceInput").value = product.price;
     document.getElementById("stockInput").value = product.stock;
-    document.getElementById("headingInput").value = product.heading || "";
-    document.getElementById("descriptionInput").value = product.description || "";
+    document.getElementById("headingInput").value = product.shortDescr || "";
+    document.getElementById("descriptionInput").value = product.descr || "";
     cancelEditBtn.hidden = false;
 }
 
@@ -85,36 +81,38 @@ function populateFormForEdit(product) {
 async function handleProductSubmit(event) {
     event.preventDefault();
     const productId = document.getElementById("productIdInput").value;
-    const productData = getFormProductData();
+    const formData = buildProductFormData(productId);
     const method = productId ? "PUT" : "POST";
-    const url = productId ? `${apiBaseUrl}/products/${productId}` : `${apiBaseUrl}/products`;
+    const url = `${apiBaseUrl}/webshop/chocolates?key=${groupkey}`;
 
-    await sendProductRequest(url, method, productData);
+    await sendProductRequest(url, method, formData);
 }
 
 //--------------------------------------------------
-function getFormProductData() {
-    return {
-        name: document.getElementById("nameInput").value.trim(),
-        category: document.getElementById("categoryInput").value.trim(),
-        price: Number(document.getElementById("priceInput").value),
-        stock: Number(document.getElementById("stockInput").value),
-        heading: document.getElementById("headingInput").value.trim(),
-        description: document.getElementById("descriptionInput").value.trim(),
-        image: document.getElementById("imageInput").value.trim()
-    };
+function buildProductFormData(productId) {
+    const formData = new FormData();
+    if (productId) {
+        formData.append("id", productId);
+    }
+    formData.append("name", document.getElementById("nameInput").value.trim());
+    formData.append("catID", document.getElementById("categoryInput").value.trim());
+    formData.append("price", document.getElementById("priceInput").value);
+    formData.append("stock", document.getElementById("stockInput").value);
+    formData.append("heading", document.getElementById("headingInput").value.trim());
+    formData.append("description", document.getElementById("descriptionInput").value.trim());
+    return formData;
 }
 
 //--------------------------------------------------
-async function sendProductRequest(url, method, productData) {
+async function sendProductRequest(url, method, formData) {
     try {
         const response = await fetch(url, {
             method: method,
-            headers: getAuthHeaders(),
-            body: JSON.stringify(productData)
+            headers: { "authorization": sessionStorage.getItem("adminToken") },
+            body: formData
         });
         if (!response.ok) {
-            throw new Error("Action failed. Check if you own this product.");
+            throw new Error("Action failed. You can only edit products you added yourself.");
         }
         resetForm();
         loadProducts();
@@ -126,9 +124,10 @@ async function sendProductRequest(url, method, productData) {
 //--------------------------------------------------
 async function deleteProduct(productId) {
     try {
-        const response = await fetch(`${apiBaseUrl}/products/${productId}`, {
+        const url = `${apiBaseUrl}/webshop/chocolates?key=${groupkey}&id=${productId}`;
+        const response = await fetch(url, {
             method: "DELETE",
-            headers: getAuthHeaders()
+            headers: { "authorization": sessionStorage.getItem("adminToken") }
         });
         if (!response.ok) {
             throw new Error("Could not delete product.");
@@ -144,15 +143,6 @@ function resetForm() {
     productForm.reset();
     document.getElementById("productIdInput").value = "";
     cancelEditBtn.hidden = true;
-}
-
-//--------------------------------------------------
-function getAuthHeaders() {
-    return {
-        "Content-Type": "application/json",
-        "x-api-key": groupKey,
-        "Authorization": `Bearer ${sessionStorage.getItem("adminToken")}`
-    };
 }
 
 //--------------------------------------------------

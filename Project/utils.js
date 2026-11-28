@@ -1,6 +1,8 @@
 
 //groupkey ------------------------------------------------
 const groupkey = "KQEHNU11"; // your groupkey here
+const apiBaseUrl = "https://sukkergris.onrender.com";
+
 
 //fetch wrapper function ----------------------------------
 async function sendRequest(url, cfg) {
